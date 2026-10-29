@@ -1,69 +1,36 @@
 # Stopzone Remotion Promo
 
-A Remotion-based product-film project for Stopzone. The composition is designed for a 9:16 vertical master and a 16:9 landscape version, with all animation driven by the Remotion timeline.
+The current review build uses cropped product-screen assets, animated device framing, an animated route motif, scene-aligned narration, background music, a short wake-up accent, and a final brand card.
 
-## Current state
+## Important: add the bundled assets
 
-This is a motion-graphics prototype with animated route drawing, a moving location marker, kinetic typography, phone/UI motion, an alert climax, and a CTA end card. The latest pass increases the vertical phone framing from 320px to 500px and tightens some scene movement to reduce the tiny-product / excessive-negative-space problem. The phone screens are still **vector stand-ins**, not the actual Stopzone screenshots, so this remains a review build rather than a final ad.
+The source expects files under `public/assets/` and `public/audio/`. Download the complete project archive provided in this conversation and copy its `public/` folder into the root of this repository, merging the folders. The archive contains the real screen crops, app icon, App Store badge, music, narration segments, and alarm accent.
 
-## Requirements
+## Run
 
-- Node.js 20 or newer recommended
-- npm
-
-## Install once
+Requires Node.js 20+ and npm.
 
 ```bash
 npm install
-```
-
-## Preview
-
-```bash
 npm run studio
 ```
 
-Choose `StopzoneVertical` in Remotion Studio.
-
-## Render vertical
+Choose `StopzoneVertical` in Remotion Studio, then render:
 
 ```bash
 npm run render:vertical
 ```
 
-## Render landscape
+The output is `out/stopzone-vertical.mp4`, 1080 × 1920 at 30 fps for 30 seconds.
 
-```bash
-npm run render:landscape
-```
+## Audio mix
 
-## Audio
+- Music bed: 18% volume
+- Scene narration: full volume
+- Alarm accent: 24% volume at the wake-up reveal
 
-Place approved audio files here:
+These are starting levels, not final mastering. Check the mix on phone speakers and headphones. Verify product claims and the official App Store destination before publication.
 
-- `public/audio/music.mp3`
-- `public/audio/voiceover.mp3`
+## Review status
 
-The composition now references both tracks through Remotion's `Audio` component. The files must exist before rendering:
-
-- `public/audio/music.mp3` — background music (looped at 14% volume)
-- `public/audio/voiceover.mp3` — final ElevenLabs narration (full volume)
-
-If either file is missing, the render may fail. The current source does not include a separate alarm sound effect yet. Review narration/music balance and scene sync in the rendered file before publication.
-
-## Updating
-
-```bash
-git pull
-npm run studio
-```
-
-## Creative rules
-
-- Product first, not a generic template.
-- Animate the route and location marker continuously; do not rely on screenshot transitions.
-- Keep the hook readable in the first two seconds.
-- In the vertical version, the product should occupy a substantial share of the frame; avoid a small phone floating beneath a large empty headline area.
-- Inspect all five vertical scenes in Remotion Studio after changing phone scale. Larger device framing is a layout improvement, not proof that the final render is correct.
-- CTA must be readable and use the official App Store badge/link before publication.
-- Do not make unverified claims about privacy, offline operation, battery use, or guaranteed alarms.
+This is an improved review build, not a final approved advertisement. Inspect the render for scene timing, text readability, and sound sync before publishing.
