@@ -4,7 +4,7 @@ A Remotion-based product-film project for Stopzone. The composition is designed 
 
 ## Current state
 
-This is the first source-controlled foundation: animated route drawing, moving location marker, wake-zone pulse, kinetic typography, phone/UI motion, alert climax, and a CTA end card. The UI in this initial pass is a **vector stand-in**, not a screenshot of the actual app. Replace it with approved Stopzone screenshots/assets before calling the promo final.
+This is a motion-graphics prototype with animated route drawing, a moving location marker, kinetic typography, phone/UI motion, an alert climax, and a CTA end card. The latest pass increases the vertical phone framing from 320px to 500px and tightens some scene movement to reduce the tiny-product / excessive-negative-space problem. The phone screens are still **vector stand-ins**, not the actual Stopzone screenshots, so this remains a review build rather than a final ad.
 
 ## Requirements
 
@@ -58,5 +58,7 @@ npm run studio
 - Product first, not a generic template.
 - Animate the route and location marker continuously; do not rely on screenshot transitions.
 - Keep the hook readable in the first two seconds.
+- In the vertical version, the product should occupy a substantial share of the frame; avoid a small phone floating beneath a large empty headline area.
+- Inspect all five vertical scenes in Remotion Studio after changing phone scale. Larger device framing is a layout improvement, not proof that the final render is correct.
 - CTA must be readable and use the official App Store badge/link before publication.
 - Do not make unverified claims about privacy, offline operation, battery use, or guaranteed alarms.
