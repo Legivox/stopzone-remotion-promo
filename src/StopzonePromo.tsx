@@ -20,12 +20,14 @@ const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}
   const vertical = format === 'vertical';
   const enter = spring({frame:Math.max(0,frame),fps,config:{damping:20,stiffness:75,mass:.9}});
   const out = interpolate(frame,[157,179],[1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
-  const fade = enter*out;
+  const isWake = index===3;
+  const isEnd = index===4;
+  // Clear the underlying fifth-scene content before the end card arrives.
+  const endSceneFade = isEnd ? interpolate(frame,[70,85],[1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'}) : 1;
+  const fade = enter*out*endSceneFade;
   const scale = interpolate(frame,[0,179],[1.02,1.09],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
   const float = Math.sin(frame/17)*(vertical?8:5);
   const tilt = Math.sin(frame/38)*.45;
-  const isWake = index===3;
-  const isEnd = index===4;
   const textStyle:React.CSSProperties = vertical
     ? {position:'absolute',left:68,right:68,top:140,zIndex:3,opacity:fade,transform:`translateY(${(1-enter)*26}px)`}
     : {position:'absolute',left:130,top:'50%',width:width*.43,zIndex:3,opacity:fade,transform:`translateY(calc(-50% + ${(1-enter)*26}px))`};
