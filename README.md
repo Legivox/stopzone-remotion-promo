@@ -44,7 +44,12 @@ Place approved audio files here:
 - `public/audio/music.mp3`
 - `public/audio/voiceover.mp3`
 
-The composition currently works without audio files. When assets are added, the tracks are mixed through Remotion's `Audio` component; use a final render to review levels and sync.
+The composition now references both tracks through Remotion's `Audio` component. The files must exist before rendering:
+
+- `public/audio/music.mp3` — background music (looped at 14% volume)
+- `public/audio/voiceover.mp3` — final ElevenLabs narration (full volume)
+
+If either file is missing, the render may fail. The current source does not include a separate alarm sound effect yet. Review narration/music balance and scene sync in the rendered file before publication.
 
 ## Updating
 
