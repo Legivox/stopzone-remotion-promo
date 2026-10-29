@@ -1,0 +1,22 @@
+{
+  "name": "stopzone-remotion-promo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Motion graphics promo for Stopzone built with Remotion",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render:vertical": "remotion render src/index.ts StopzoneVertical out/stopzone-vertical.mp4",
+    "render:landscape": "remotion render src/index.ts StopzoneLandscape out/stopzone-landscape.mp4",
+    "still": "remotion still src/index.ts StopzoneVertical out/stopzone-poster.png"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.409",
+    "remotion": "4.0.409",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "typescript": "5.7.2"
+  }
+}
