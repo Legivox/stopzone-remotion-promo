@@ -65,5 +65,5 @@ const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}
 export const StopzonePromo:React.FC<Props> = ({format,audioEnabled=true}) => <AbsoluteFill style={{background:BG}}>
   {scenes.map((_,index)=><Sequence key={index} from={index*180} durationInFrames={180}><Scene index={index} format={format}/></Sequence>)}
   {audioEnabled && <Audio src={staticFile('audio/music.mp3')} volume={0.18}/>}
-  {audioEnabled && <Audio src={staticFile('audio/voiceover-original.mp3')} volume={1}/>
+  {audioEnabled && <Audio src={staticFile('audio/voiceover-original.mp3')} volume={1}/>}
 </AbsoluteFill>;
