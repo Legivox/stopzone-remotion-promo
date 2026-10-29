@@ -14,28 +14,6 @@ const scenes = [
   {title:'Every stop,\ncounted.', body:'Your journeys. Your places.\nYour stops, kept personal.', image:'05-stats-phone.webp', kicker:'STOPZONE'},
 ];
 
-const MotionAccents: React.FC<{index:number; vertical:boolean}> = ({index, vertical}) => {
-  const frame = useCurrentFrame();
-  const {width,height} = useVideoConfig();
-  const progress = interpolate(frame,[0,145],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
-  const pulse = 0.55 + (Math.sin(frame/5)+1)*0.18;
-  const y = vertical ? height * 0.885 : height * 0.82;
-  const left = width * (vertical ? 0.12 : 0.04);
-  const right = width * (vertical ? 0.88 : 0.96);
-  const routeWidth = right-left;
-  return <svg aria-hidden="true" style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:6}} viewBox={`0 0 ${width} ${height}`}>
-    <line x1={left} y1={y} x2={right} y2={y} stroke="rgba(255,255,255,.18)" strokeWidth={vertical?2:1.5}/>
-    <line x1={left} y1={y} x2={left+routeWidth*progress} y2={y} stroke={RED} strokeWidth={vertical?3:2} strokeLinecap="round"/>
-    <circle cx={left+routeWidth*progress} cy={y} r={vertical?7:5} fill={RED} opacity={pulse}/>
-    <circle cx={left+routeWidth*progress} cy={y} r={vertical?15:11} fill="none" stroke={RED} strokeWidth="1.5" opacity={pulse*.7}/>
-    {index===1 && <g opacity={interpolate(frame,[8,20,32],[0,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}>
-      <circle cx={width*.78} cy={height*(vertical?.78:.55)} r={vertical?28:18} fill="none" stroke={RED} strokeWidth="2"/>
-      <circle cx={width*.78} cy={height*(vertical?.78:.55)} r={vertical?7:5} fill={RED}/>
-    </g>}
-    {index===3 && <circle cx={width*.5} cy={height*(vertical?.79:.72)} r={vertical?42:28} fill="none" stroke={RED} strokeWidth="2" opacity={interpolate(frame,[0,8,16,28],[0,.8,.25,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}/>}
-  </svg>;
-};
-
 const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}) => {
   const frame = useCurrentFrame();
   const {width,height,fps} = useVideoConfig();
@@ -45,7 +23,7 @@ const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}
   const isWake = index===3;
   const isEnd = index===4;
   const endSceneFade = isEnd ? interpolate(frame,[70,85],[1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'}) : 1;
-  const fade = enter*out*endSceneFade;
+  const fade = (vertical ? enter : enter*out)*endSceneFade;
   const scale = interpolate(frame,[0,179],[1.02,1.09],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
   const float = Math.sin(frame/17)*(vertical?8:5);
   const tilt = Math.sin(frame/38)*.45;
@@ -71,9 +49,8 @@ const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}
       <div style={{marginTop:34,color:RED,letterSpacing:'.17em',fontSize:15,fontWeight:700}}>{scenes[index].kicker}</div>
     </div>}
     <Img src={staticFile(`assets/${scenes[index].image}`)} style={vertical
-      ? {position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',opacity:fade,transform:`scale(${interpolate(frame,[0,179],[1,1.025],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})})`}
+      ? {position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',opacity:fade,transform:`translateY(${interpolate(frame,[0,24,179],[22,0,-5],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}px) scale(${interpolate(frame,[0,179],[1.015,1.045],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})})`}
       : phoneStyle}/>
-    {vertical && !isEnd && <MotionAccents index={index} vertical={vertical}/>}
     {isWake && <AbsoluteFill style={{zIndex:4,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 70%,rgba(255,64,56,.24),transparent 55%)',opacity:interpolate(frame,[0,7,13,24],[0,.72,.08,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}}/>}
     {isEnd && <AbsoluteFill style={{zIndex:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',padding:80,background:'radial-gradient(ellipse at 50% 48%,rgba(255,64,56,.15),rgba(8,9,11,.97) 62%)',opacity:interpolate(frame,[85,108],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'}),transform:`translateY(${interpolate(frame,[85,108],[24,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}px)`}}>
       <Img src={staticFile('assets/stopzone-icon.webp')} style={{width:112,height:112,borderRadius:28,boxShadow:'0 0 70px rgba(255,64,56,.18)'}}/>
