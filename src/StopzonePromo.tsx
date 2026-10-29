@@ -35,21 +35,24 @@ const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}
     ? {position:'absolute',width:width*.72,height:height*.54,objectFit:'contain',left:'50%',top:height*.425,transform:`translate(-50%,${float}px) scale(${scale}) rotate(${tilt}deg)`,opacity:fade,filter:'drop-shadow(0 36px 70px rgba(0,0,0,.72))'}
     : {position:'absolute',height:height*.91,width:width*.42,objectFit:'contain',right:width*.045,top:height*.025,transform:`translateY(${float}px) scale(${scale}) rotate(${tilt}deg)`,opacity:fade,filter:'drop-shadow(0 32px 70px rgba(0,0,0,.72))'};
   return <AbsoluteFill style={{background:BG,color:WHITE,overflow:'hidden',fontFamily:'Inter, SF Pro Display, Helvetica, Arial, sans-serif'}}>
-    <AbsoluteFill style={{background:`radial-gradient(ellipse at ${vertical?'50% 72%':'77% 56%'}, ${isWake?'rgba(255,64,56,.19)':'rgba(255,64,56,.11)'}, transparent 50%)`,opacity:fade}}/>
-    <div style={{position:'absolute',inset:0,opacity:.12,backgroundImage:'linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px)',backgroundSize:vertical?'72px 72px':'90px 90px',maskImage:'linear-gradient(to bottom,transparent,black 25%,black 78%,transparent)'}}/>
-    <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:fade}} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+    {!vertical && <AbsoluteFill style={{background:`radial-gradient(ellipse at ${vertical?'50% 72%':'77% 56%'}, ${isWake?'rgba(255,64,56,.19)':'rgba(255,64,56,.11)'}, transparent 50%)`,opacity:fade}}/>}
+    {!vertical && <div style={{position:'absolute',inset:0,opacity:.12,backgroundImage:'linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px)',backgroundSize:'90px 90px',maskImage:'linear-gradient(to bottom,transparent,black 25%,black 78%,transparent)'}}/>}
+    {!vertical && <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:fade}} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
       <path d={vertical?`M -40 ${height*.39} C ${width*.2} ${height*.34},${width*.58} ${height*.42},${width+40} ${height*.33}`:`M -40 ${height*.74} C ${width*.2} ${height*.64},${width*.58} ${height*.32},${width+40} ${height*.43}`} fill="none" stroke="rgba(255,64,56,.5)" strokeWidth="1.5" strokeDasharray="7 12" strokeDashoffset={-frame*1.5}/>
       <path d={vertical?`M ${width*.08} ${height*.31} H ${width*.92}`:`M ${width*.04} ${height*.82} H ${width*.96}`} fill="none" stroke="rgba(255,255,255,.16)" strokeWidth="1"/>
       <circle cx={vertical?width*.5:width*.55} cy={vertical?height*.31:height*.82} r={7+Math.sin(frame/7)*3} fill="none" stroke={RED} strokeWidth="2"/>
       <circle cx={vertical?width*.5:width*.55} cy={vertical?height*.31:height*.82} r="2.5" fill={RED}/>
-    </svg>
-    <div style={textStyle}>
+    </svg>}
+    {!vertical && <div style={textStyle}>
       <div style={{display:'flex',alignItems:'center',gap:13,marginBottom:vertical?28:24}}><div style={{width:52,height:5,borderRadius:8,background:RED}}/><div style={{fontSize:15,letterSpacing:'.18em',color:MUTED}}>0{index+1} <span style={{color:'#55545a'}}>/ 05</span></div></div>
       <div style={{fontSize:vertical?82:76,lineHeight:.99,letterSpacing:'-.055em',fontWeight:760,whiteSpace:'pre-line',maxWidth:vertical?900:790}}>{scenes[index].title}</div>
       <div style={{fontSize:vertical?31:27,lineHeight:1.34,color:MUTED,whiteSpace:'pre-line',marginTop:24,maxWidth:vertical?820:690}}>{scenes[index].body}</div>
       <div style={{marginTop:vertical?30:34,color:RED,letterSpacing:'.17em',fontSize:15,fontWeight:700}}>{scenes[index].kicker}</div>
-    </div>
-    <Img src={staticFile(`assets/${scenes[index].image}`)} style={phoneStyle}/>
+    </div>}
+    {vertical
+      ? <Img src={staticFile(`assets/${scenes[index].image}`)} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',opacity:fade,transform:`scale(${interpolate(frame,[0,179],[1,1.025],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})})`}}/>
+      : <Img src={staticFile(`assets/${scenes[index].image}`)} style={phoneStyle}/>
+    }
     {isWake && <AbsoluteFill style={{zIndex:4,pointerEvents:'none',background:'radial-gradient(ellipse at 50% 70%,rgba(255,64,56,.24),transparent 55%)',opacity:interpolate(frame,[0,7,13,24],[0,.72,.08,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}}/>}
     {isEnd && <AbsoluteFill style={{zIndex:8,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',padding:80,background:'radial-gradient(ellipse at 50% 48%,rgba(255,64,56,.15),rgba(8,9,11,.97) 62%)',opacity:interpolate(frame,[85,108],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'}),transform:`translateY(${interpolate(frame,[85,108],[24,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'})}px)`}}>
       <Img src={staticFile('assets/stopzone-icon.webp')} style={{width:112,height:112,borderRadius:28,boxShadow:'0 0 70px rgba(255,64,56,.18)'}}/>
@@ -58,9 +61,9 @@ const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}
       <Img src={staticFile('assets/app-store.svg')} style={{width:206,height:68,objectFit:'contain',marginTop:34}}/>
       <div style={{fontSize:19,color:MUTED,marginTop:16}}>Your stop. Your time.</div>
     </AbsoluteFill>}
-    <div style={{position:'absolute',bottom:vertical?78:48,left:vertical?68:130,right:vertical?68:130,display:'flex',alignItems:'center',gap:10,opacity:fade}}>
+    {!vertical && <div style={{position:'absolute',bottom:48,left:130,right:130,display:'flex',alignItems:'center',gap:10,opacity:fade}}>
       {scenes.map((_,i)=><div key={i} style={{height:3,flex:1,borderRadius:3,background:i===index?RED:'rgba(255,255,255,.17)'}}/>)}<div style={{fontSize:13,color:MUTED,marginLeft:7,letterSpacing:'.08em'}}>STOPZONE</div>
-    </div>
+    </div>}
   </AbsoluteFill>;
 };
 
