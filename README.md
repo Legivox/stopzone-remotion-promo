@@ -1,36 +1,34 @@
 # Stopzone Remotion Promo
 
-The current review build uses cropped product-screen assets, animated device framing, an animated route motif, scene-aligned narration, background music, a short wake-up accent, and a final brand card.
+A 30-second Remotion promo for Stopzone, with vertical (1080 × 1920) and landscape (1920 × 1080) compositions at 30 fps.
 
-## Important: add the bundled assets
+## Run locally
 
-The source expects files under `public/assets/` and `public/audio/`. Download the complete project archive provided in this conversation and copy its `public/` folder into the root of this repository, merging the folders. The archive contains the real screen crops, app icon, App Store badge, music, narration segments, and alarm accent.
-
-## Run
-
-Requires Node.js 20+ and npm.
+Requires Node.js 20+.
 
 ```bash
 npm install
 npm run studio
 ```
 
-Choose `StopzoneVertical` in Remotion Studio, then render:
+Select `StopzoneVertical` in Remotion Studio to inspect the portrait version. Render with:
 
 ```bash
 npm run render:vertical
 ```
 
-The output is `out/stopzone-vertical.mp4`, 1080 × 1920 at 30 fps for 30 seconds.
+The output is `out/stopzone-vertical.mp4`.
 
-## Audio mix
+## Assets
 
-- Music bed: 18% volume
-- Scene narration: full volume
-- Alarm accent: 24% volume at the wake-up reveal
+Product artwork is stored under `public/assets/`; audio files are stored under `public/audio/`. The portrait artwork files already contain their designed headline, supporting copy, route motif, and phone mockup. The vertical composition therefore displays the artwork as a complete scene rather than drawing a second copy of the headline over it.
 
-These are starting levels, not final mastering. Check the mix on phone speakers and headphones. Verify product claims and the official App Store destination before publication.
+## Review checklist
 
-## Review status
+Before publishing, inspect the complete render for:
+- One headline per scene and readable product artwork.
+- Clean scene transitions and a dedicated final call-to-action.
+- Narration/music timing and comfortable audio levels on phone speakers.
+- Correct App Store destination and accurate product claims.
 
-This is an improved review build, not a final approved advertisement. Inspect the render for scene timing, text readability, and sound sync before publishing.
+A source change is not considered visually verified until the rendered MP4 has been reviewed.
