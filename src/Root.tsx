@@ -16,7 +16,7 @@ export const Root: React.FC = () => (
     <Composition
       id="StopzoneLandscape"
       component={StopzonePromo}
-      durationInFrames={810}
+      durationInFrames={900}
       fps={30}
       width={1920}
       height={1080}
