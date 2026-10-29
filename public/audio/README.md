@@ -1,9 +1,15 @@
-# Audio placement
+# Required audio assets
 
-Audio files are kept out of Git until the final approved mix is ready.
+The current composition references these exact files:
 
-1. Copy your chosen background music file to `public/audio/music.mp3`.
-2. Generate the narration using `NARRATION-ELEVENLABS.txt`, then save it locally as `public/audio/voiceover.mp3`.
-3. The final composition will mix these as separate tracks, with narration clearly above music.
+- `music.mp3`
+- `voice-01.mp3`
+- `voice-02.mp3`
+- `voice-03.mp3`
+- `voice-04.mp3`
+- `voice-05.mp3`
+- `alarm.wav`
 
-The current Remotion composition is designed for silent visual review until the audio is added. Do not add copyrighted music unless you have the rights to use it in the promotion.
+The supplied audio files are included in the local review bundle but have not yet been committed as binary files to this repository. The Remotion source uses them at a starting mix of 18% music, full-level narration and 24% alarm accent. This is not final mastering.
+
+Before publishing, verify that the silent-mode claim matches actual app behavior and check the rendered audio mix.
