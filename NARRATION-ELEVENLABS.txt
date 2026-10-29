@@ -1,7 +1,7 @@
 STOPZONE — ELEVENLABS TEXT-TO-SPEECH SCRIPT
-Target duration: approximately 25–28 seconds
-Delivery: natural, intimate, confident; modern premium product film, not a movie-trailer announcer.
-Voice direction: mid-low register, warm and clear, neutral international English or natural US English. Moderate pace, close-mic feel. Underplay the opening, build warmth through the benefit, then land the brand and CTA with clarity.
+Target duration: approximately 25–28 seconds.
+Style: intimate, warm, modern, cinematic but natural. No exaggerated movie-trailer voice.
+Voice: warm mid-low register, clear English, neutral international or natural US accent, moderate pace. Let the pauses do the work.
 
 [softly]
 Ever looked up… and wondered if your stop is next?
@@ -18,17 +18,16 @@ Stopzone tracks the miles while you rest.
 
 And when it’s time… [pause] it wakes you.
 
-[confident]
 Stopzone. Get off where you meant to.
 
-[slightly excited]
+[excited]
 Download Stopzone on the App Store today.
 
-PRODUCTION NOTES
-- Generate 2–3 takes with the same voice. Keep the take that sounds human and assured, not over-acted.
-- Use the ElevenLabs v4 model if available for audio-tag support. Tags are cues, not guaranteed effects.
-- Keep the pauses; they create edit points for the route drawing, phone lock, and red alarm reveal.
-- If ElevenLabs reads bracket tags aloud, remove tags unsupported by the selected model and generate again.
-- Do not add sound-effect tags such as [bell ringing] inside this narration unless the generated sound is actually wanted in the voice track. Create the wake-up impact separately in the edit.
-- Read “Stopzone” as one word. If the voice pronounces it incorrectly, try phonetic guidance in the voice prompt rather than altering the brand spelling in the visible copy.
-- Final CTA uses “App Store” because the supplied end card is for iOS. Verify the live listing and use the official badge/link before publishing.
+ELEVENLABS NOTES
+- Try the Eleven v4 model if it is available in your account and supports the tags.
+- Generate 2–3 takes with the same voice. Choose the most natural, assured performance rather than the most dramatic one.
+- Keep the pauses: they are edit points for the route drawing, phone lock, and red wake-up reveal.
+- If the model reads a tag aloud or ignores it, remove that tag and regenerate.
+- Avoid adding [bell ringing] to the narration. The wake-up impact should be a separate sound effect in the edit.
+- Say “Stopzone” as one word. If pronunciation is wrong, adjust voice instructions rather than changing the brand spelling.
+- The final “App Store” CTA is for iOS. Verify the live listing and use the official App Store badge/link before publication.
