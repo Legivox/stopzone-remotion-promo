@@ -65,6 +65,5 @@ const Scene: React.FC<{index:number; format:Props['format']}> = ({index, format}
 export const StopzonePromo:React.FC<Props> = ({format,audioEnabled=true}) => <AbsoluteFill style={{background:BG}}>
   {scenes.map((_,index)=><Sequence key={index} from={index*180} durationInFrames={180}><Scene index={index} format={format}/></Sequence>)}
   {audioEnabled && <Audio src={staticFile('audio/music.mp3')} volume={0.18}/>}
-  {audioEnabled && <Sequence from={540} durationInFrames={60}><Audio src={staticFile('audio/alarm.wav')} volume={0.24}/></Sequence>}
-  {audioEnabled && <><Sequence from={15} durationInFrames={53}><Audio src={staticFile('audio/voice-01.mp3')} volume={1}/></Sequence><Sequence from={198} durationInFrames={40}><Audio src={staticFile('audio/voice-02.mp3')} volume={1}/></Sequence><Sequence from={375} durationInFrames={53}><Audio src={staticFile('audio/voice-03.mp3')} volume={1}/></Sequence><Sequence from={549} durationInFrames={63}><Audio src={staticFile('audio/voice-04.mp3')} volume={1}/></Sequence><Sequence from={726} durationInFrames={123}><Audio src={staticFile('audio/voice-05.mp3')} volume={1}/></Sequence></>}
+  {audioEnabled && <Audio src={staticFile('audio/voiceover-original.mp3')} volume={1}/>
 </AbsoluteFill>;
