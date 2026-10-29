@@ -1,229 +1,66 @@
 import React from 'react';
-import {
-  AbsoluteFill,
-  Audio,
-  Easing,
-  Img,
-  interpolate,
-  staticFile,
-  useCurrentFrame,
-  useVideoConfig,
-} from 'remotion';
+import {AbsoluteFill, Audio, Easing, interpolate, staticFile, useCurrentFrame} from 'remotion';
 
-type Format = 'vertical' | 'landscape';
-type Props = {format: Format};
+type Props={format:'vertical'|'landscape'};
+const RED='#ff403b', BG='#080809', WHITE='#f6f5f2', MUTED='#a09fa5';
+const C={extrapolateLeft:'clamp' as const,extrapolateRight:'clamp' as const};
+const fade=(f:number,a:number,b:number)=>interpolate(f,[a,b],[0,1],{...C,easing:Easing.bezier(.22,1,.36,1)});
+const lift=(f:number,a:number,b:number,d:number)=>interpolate(f,[a,b],[d,0],{...C,easing:Easing.bezier(.22,1,.36,1)});
 
-const RED = '#ff3b42';
-const WHITE = '#f5f3ef';
-const MUTED = '#92939b';
-const BG = '#08090c';
+const Backdrop:React.FC<{f:number}> = ({f})=><AbsoluteFill style={{background:'radial-gradient(ellipse at 52% 45%,#241114 0%,#0c0b0e 48%,#060607 100%)',overflow:'hidden'}}>
+<svg viewBox="0 0 1080 1920" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{position:'absolute',inset:0,opacity:.2}}>
+<defs><pattern id="grid" width="90" height="90" patternUnits="userSpaceOnUse"><path d="M90 0H0V90" fill="none" stroke="#716168" strokeWidth="1"/></pattern></defs>
+<rect width="1080" height="1920" fill="url(#grid)"/><g fill="none" stroke="#7e2929" strokeWidth="2"><path d={`M-100 ${660+Math.sin(f/40)*16} C240 520 460 810 1200 600`}/><path d={`M-100 ${1380+Math.sin(f/50)*16} C260 1200 600 1540 1200 1270`}/></g></svg>
+<AbsoluteFill style={{background:'radial-gradient(ellipse at center,transparent 20%,#050506 86%)'}}/></AbsoluteFill>;
 
-const clamp = {extrapolateLeft: 'clamp' as const, extrapolateRight: 'clamp' as const};
-const fade = (f: number, start: number, end: number) =>
-  interpolate(f, [start, end], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
-const slide = (f: number, start: number, end: number, from: number, to = 0) =>
-  interpolate(f, [start, end], [from, to], {...clamp, easing: Easing.out(Easing.cubic)});
-
-const Grid: React.FC<{opacity?: number}> = ({opacity = 0.18}) => (
-  <svg width="100%" height="100%" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice" style={{position:'absolute', inset:0, opacity}}>
-    <defs>
-      <pattern id="grid" width="84" height="84" patternUnits="userSpaceOnUse">
-        <path d="M 84 0 L 0 0 0 84" fill="none" stroke="#5b5e69" strokeWidth="1"/>
-      </pattern>
-      <radialGradient id="gridFade"><stop offset="0%" stopColor="white"/><stop offset="100%" stopColor="black"/></radialGradient>
-      <mask id="gridMask"><rect width="100%" height="100%" fill="url(#gridFade)"/></mask>
-    </defs>
-    <rect width="1080" height="1920" fill="url(#grid)" mask="url(#gridMask)"/>
-  </svg>
-);
-
-const RouteGraphic: React.FC<{frame: number; width: number; height: number; compact?: boolean}> = ({frame, width, height, compact = false}) => {
-  const progress = interpolate(frame, [0, 190], [0, 1], {...clamp, easing: Easing.inOut(Easing.cubic)});
-  const d = 'M 60 520 L 190 520 L 190 390 L 350 390 L 350 275 L 510 275 L 510 405 L 660 405 L 660 240 L 825 240 L 825 120';
-  const points = [
-    {x:60,y:520},{x:190,y:520},{x:190,y:390},{x:350,y:390},{x:350,y:275},
-    {x:510,y:275},{x:510,y:405},{x:660,y:405},{x:660,y:240},{x:825,y:240},{x:825,y:120}
-  ];
-  const total = points.slice(1).reduce((sum,p,i)=>sum+Math.hypot(p.x-points[i].x,p.y-points[i].y),0);
-  let remaining = progress * total;
-  let marker = points[0];
-  for (let i=1;i<points.length;i++) {
-    const prev=points[i-1], next=points[i];
-    const len=Math.hypot(next.x-prev.x,next.y-prev.y);
-    if (remaining <= len) {
-      const t= len===0 ? 0 : remaining/len;
-      marker={x:prev.x+(next.x-prev.x)*t,y:prev.y+(next.y-prev.y)*t};
-      break;
-    }
-    remaining -= len; marker=next;
-  }
-  const scale = compact ? 0.64 : 1;
-  return (
-    <svg width={width} height={height} viewBox="0 0 900 600" style={{overflow:'visible'}}>
-      <defs>
-        <filter id="glow"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        <linearGradient id="routeGradient" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stopColor="#ff7b53"/><stop offset="100%" stopColor={RED}/></linearGradient>
-      </defs>
-      <g opacity=".23" stroke="#676b78" strokeWidth="2" fill="none">
-        <path d="M20 80H870M20 160H870M20 240H870M20 320H870M20 400H870M20 480H870M100 40V560M220 40V560M340 40V560M460 40V560M580 40V560M700 40V560M820 40V560"/>
-        <path d="M0 560L300 40M180 600L520 0M490 600L840 0" opacity=".45"/>
-      </g>
-      <path d={d} fill="none" stroke="#2a2c34" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d={d} fill="none" stroke="url(#routeGradient)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" pathLength="1" strokeDasharray="1" strokeDashoffset={1-progress} filter="url(#glow)"/>
-      <circle cx="825" cy="120" r={50+Math.sin(frame/8)*5} fill={RED} opacity=".1"/>
-      <circle cx="825" cy="120" r="31" fill="none" stroke={RED} strokeWidth="2" opacity={0.35+0.3*Math.sin(frame/7)}/>
-      <circle cx="825" cy="120" r="11" fill={RED} filter="url(#glow)"/>
-      <circle cx={marker.x} cy={marker.y} r="20" fill={RED} opacity=".17"/>
-      <circle cx={marker.x} cy={marker.y} r="8" fill={WHITE} stroke={RED} strokeWidth="5"/>
-    </svg>
-  );
+const Route:React.FC<{f:number}> = ({f})=>{
+const p=interpolate(f,[0,170],[0,1],{...C,easing:Easing.inOut(Easing.cubic)});
+const path='M35 355 H130 V270 H245 V190 H355 V255 H470 V110 H600';
+const points=[{x:35,y:355},{x:130,y:355},{x:130,y:270},{x:245,y:270},{x:245,y:190},{x:355,y:190},{x:355,y:255},{x:470,y:255},{x:470,y:110},{x:600,y:110}];
+const lens=points.slice(1).map((q,i)=>Math.hypot(q.x-points[i].x,q.y-points[i].y)),total=lens.reduce((a,b)=>a+b,0);let d=p*total,x=35,y=355;
+for(let i=0;i<lens.length;i++){const a=points[i],b=points[i+1];if(d<=lens[i]){const t=d/lens[i];x=a.x+(b.x-a.x)*t;y=a.y+(b.y-a.y)*t;break;}d-=lens[i];x=b.x;y=b.y;}
+return <svg viewBox="0 0 640 420" width="100%" style={{display:'block',overflow:'visible'}}><defs><linearGradient id="route" x1="0" y1="1" x2="1" y2="0"><stop stopColor="#ff9863"/><stop offset="1" stopColor={RED}/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g stroke="#333138" strokeWidth="2" fill="none"><path d="M0 60H640M0 130H640M0 200H640M0 270H640M0 340H640M80 0V420M180 0V420M280 0V420M380 0V420M480 0V420M580 0V420"/><path d="M-20 350L260 0M130 440L420 0M370 440L650 70"/></g>
+<path d={path} fill="none" stroke="#353238" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/><path d={path} fill="none" stroke="url(#route)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" pathLength="1" strokeDasharray="1" strokeDashoffset={1-p} filter="url(#glow)"/>
+<circle cx="600" cy="110" r={22+Math.sin(f/7)*6} fill={RED} opacity=".15"/><circle cx="600" cy="110" r="12" fill="none" stroke={RED} strokeWidth="2"/><circle cx="600" cy="110" r="6" fill={RED}/>
+<circle cx={x} cy={y} r="16" fill={RED} opacity=".18"/><circle cx={x} cy={y} r="7" fill={WHITE} stroke={RED} strokeWidth="4"/></svg>;
 };
 
-const Phone: React.FC<{frame:number; left?:boolean}> = ({frame,left=false}) => {
-  const enter = fade(frame, 0, 26);
-  const y = slide(frame, 0, 30, 100, 0);
-  const rotate = interpolate(frame, [0, 150, 300], [left ? -8 : 8, left ? -3 : 3, left ? -6 : 6], {...clamp, easing:Easing.inOut(Easing.sin)});
-  const pulse = 1 + Math.sin(frame/8)*0.018;
-  return (
-    <div style={{width:340,height:690,borderRadius:52,border:'3px solid #454751',background:'linear-gradient(145deg,#202127,#090a0e 35%,#15161b)',padding:12,boxShadow:'0 55px 100px #000a, 0 0 55px #ff3b4219',transform:`translateY(${y}px) rotate(${rotate}deg) scale(${pulse})`,opacity:enter,position:'relative',boxSizing:'border-box'}}>
-      <div style={{width:'100%',height:'100%',borderRadius:39,background:'#0c0d12',overflow:'hidden',position:'relative'}}>
-        <div style={{height:34,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{width:92,height:20,borderRadius:20,background:'#030406'}}/></div>
-        <div style={{padding:'24px 23px',color:WHITE,fontFamily:'Inter,Arial,sans-serif'}}>
-          <div style={{fontSize:13,letterSpacing:3,color:MUTED,fontWeight:700}}>STOPZONE</div>
-          <div style={{fontSize:29,fontWeight:750,marginTop:12,letterSpacing:-1}}>Your stop, handled.</div>
-          <div style={{fontSize:14,color:MUTED,marginTop:8}}>Stay in the moment.</div>
-          <div style={{marginTop:25,height:260,borderRadius:24,background:'linear-gradient(135deg,#1a1c23,#111218)',border:'1px solid #30323b',position:'relative',overflow:'hidden'}}>
-            <svg viewBox="0 0 280 260" width="100%" height="100%">
-              <g stroke="#363944" strokeWidth="3" fill="none" opacity=".8">
-                <path d="M-20 35L100 80L290 10M-10 110L90 130L290 90M-10 200L110 180L290 230M35 -10L70 270M145 -10L160 270M230 -10L210 270"/>
-              </g>
-              <path d="M28 210L90 210L90 145L145 145L145 90L218 90L218 48" fill="none" stroke={RED} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="360" strokeDashoffset={interpolate(frame,[0,220],[360,0],clamp)}/>
-              <circle cx="218" cy="48" r={35+Math.sin(frame/8)*4} fill={RED} opacity=".13"/>
-              <circle cx="218" cy="48" r="12" fill={RED}/>
-              <circle cx={interpolate(frame,[0,220],[28,218],clamp)} cy={interpolate(frame,[0,220],[210,48],clamp)} r="6" fill={WHITE} stroke={RED} strokeWidth="3"/>
-            </svg>
-            <div style={{position:'absolute',left:14,bottom:14,fontSize:11,color:'#d6d7dc',letterSpacing:1}}>LIVE ROUTE</div>
-          </div>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:24}}>
-            <div><div style={{fontSize:12,color:MUTED}}>DISTANCE LEFT</div><div style={{fontSize:28,fontWeight:700,marginTop:4}}>{Math.max(0,1.8-frame/180).toFixed(1)} <span style={{fontSize:13,color:MUTED}}>km</span></div></div>
-            <div style={{width:74,height:74,borderRadius:50,border:'5px solid #2b2d36',borderTopColor:RED,display:'grid',placeItems:'center',transform:`rotate(${frame*2}deg)`}}><span style={{fontSize:15,fontWeight:700,transform:`rotate(-${frame*2}deg)`}}>08:42</span></div>
-          </div>
-        </div>
-        <div style={{position:'absolute',bottom:15,left:'50%',transform:'translateX(-50%)',width:110,height:5,borderRadius:5,background:'#f4f4f5'}}/>
-      </div>
-    </div>
-  );
+const Header:React.FC<{f:number;index:string;title:string;sub:string;landscape:boolean}> = ({f,index,title,sub,landscape})=><div style={{opacity:fade(f,0,17),transform:`translateY(${lift(f,0,22,28)}px)`,position:'relative',zIndex:2}}>
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:19}}><div style={{height:5,width:54,background:RED,borderRadius:4}}/><div style={{fontSize:12,color:'#77767e',letterSpacing:2}}>{index} / 05</div></div>
+<div style={{fontSize:landscape?51:59,fontWeight:850,letterSpacing:-2.5,lineHeight:1.02,color:WHITE}}>{title}</div><div style={{fontSize:landscape?20:22,color:MUTED,lineHeight:1.35,marginTop:16,maxWidth:600}}>{sub}</div></div>;
+
+const Phone:React.FC<{f:number;kind:'setup'|'ride'|'alarm'|'stats';width:number}> = ({f,kind,width})=>{
+const rot=interpolate(f,[0,90,180],[2,-1,1],C), y=lift(f,0,28,50), alarm=kind==='alarm';
+return <div style={{width,height:width*2.05,borderRadius:46,padding:8,boxSizing:'border-box',border:'2px solid #77757a',background:'linear-gradient(135deg,#888,#151518 15%,#050506 55%,#555)',boxShadow:'0 45px 90px #000c,0 0 40px #ff403b18',opacity:fade(f,0,24),transform:`translateY(${y}px) rotate(${rot}deg)`,position:'relative',flexShrink:0}}>
+<div style={{position:'absolute',zIndex:3,top:10,left:'50%',transform:'translateX(-50%)',width:85,height:22,borderRadius:20,background:'#030304'}}/>
+<div style={{height:'100%',borderRadius:37,overflow:'hidden',position:'relative',background:alarm?RED:'#0b0b0e',color:WHITE,fontFamily:'Arial,sans-serif'}}>
+<div style={{height:39,padding:'0 20px',display:'flex',alignItems:'center',justifyContent:'space-between',fontSize:12,fontWeight:700}}><span>9:41</span><span>▮▮▮ ◉ ▰</span></div>
+{kind==='setup'&&<><div style={{padding:'12px 17px 0'}}><div style={{fontSize:10,color:MUTED,letterSpacing:2}}>STOPZONE</div><div style={{fontSize:22,fontWeight:800,marginTop:8}}>Drop a pin.</div><div style={{fontSize:19,fontWeight:700}}>Set your zone.</div><div style={{fontSize:11,color:MUTED,marginTop:6}}>Choose how early we wake you.</div></div>
+<div style={{height:width*.94,marginTop:14,position:'relative',background:'linear-gradient(140deg,#1c3047,#214956 38%,#172f43 62%,#143b48)'}}>
+<svg width="100%" height="100%" viewBox="0 0 280 280"><g stroke="#5b7b8b" strokeWidth="2"><path d="M-20 30L300 200M-20 80L300 250M20 -20L230 300M110 -20L20 300M250 -20L100 300"/></g><g stroke="#3c796c" strokeWidth="14" opacity=".5"><path d="M10 10L120 90L220 50L310 110M-20 230L100 190L180 280L310 230"/></g><circle cx="145" cy="145" r={60+Math.sin(f/7)*3} fill="#eef5ff" fillOpacity=".08" stroke="#e9eff3" strokeWidth="1.5"/><path d="M30 235H80V190H145V145H220V70" fill="none" stroke={RED} strokeWidth="4" strokeDasharray="1" strokeDashoffset={1-interpolate(f,[0,130],[0,1],C)} pathLength="1"/><circle cx="145" cy="145" r="8" fill={RED} stroke="white" strokeWidth="3"/></svg>
+<div style={{position:'absolute',bottom:0,left:0,right:0,padding:11,background:'linear-gradient(transparent,#08090df5 25%)'}}><div style={{background:'#15151a',border:'1px solid #33323a',borderRadius:12,padding:10}}><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:MUTED}}><span>Wake me within</span><strong style={{fontSize:16,color:WHITE}}>{Math.max(.3,1.2-f/200).toFixed(1)} mi</strong></div><div style={{height:3,background:'#444',margin:'9px 0'}}><div style={{height:3,width:'65%',background:WHITE}}/></div><div style={{fontSize:10,color:MUTED}}>Empire State Building · New York</div><div style={{marginTop:9,background:WHITE,color:'#111',borderRadius:8,padding:9,textAlign:'center',fontSize:11,fontWeight:800}}>Start a ride now</div></div></div></div></>}
+{kind==='ride'&&<><div style={{textAlign:'center',marginTop:55}}><div style={{fontSize:12,color:MUTED}}>Work</div><div style={{fontSize:10,color:MUTED,marginTop:4}}>◈ Commute</div></div><div style={{position:'absolute',top:'37%',left:0,right:0,display:'flex',justifyContent:'center'}}><div style={{width:width*.48,height:width*.48,borderRadius:'50%',border:'2px solid #a14a30',boxShadow:'0 0 55px #ff5b241b',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',transform:`scale(${1+Math.sin(f/7)*.025})`}}><div style={{fontSize:47,fontWeight:800,color:'#ff633f'}}>{Math.max(.1,1.1-f/135).toFixed(1)}</div><div style={{fontSize:9,color:MUTED}}>mi to your stop</div></div></div><div style={{position:'absolute',bottom:35,left:17,right:17,fontSize:10,color:MUTED}}>♙ Safety net: we’ll wake you even if GPS drops.<div style={{marginTop:14,border:'1px solid #333',borderRadius:10,padding:12,textAlign:'center',color:WHITE,fontSize:11}}>End session</div></div></>}
+{alarm&&<><div style={{position:'absolute',top:'37%',left:0,right:0,textAlign:'center'}}><div style={{fontSize:10,letterSpacing:3}}>YOUR STOP</div><div style={{fontSize:32,fontWeight:800,marginTop:12}}>Work</div><div style={{fontSize:21,fontWeight:700,marginTop:12}}>0.9 mi away</div></div><div style={{position:'absolute',bottom:25,left:15,right:15,background:'#09090b',color:RED,borderRadius:14,padding:'18px 0',textAlign:'center',fontSize:20,fontWeight:900,transform:`scale(${1+Math.sin(f*1.3)*.025})`}}>I’M UP</div></>}
+{kind==='stats'&&<><div style={{fontSize:22,fontWeight:800,margin:'24px 17px'}}>Stats</div><div style={{textAlign:'center'}}><div style={{fontSize:58,fontWeight:900}}>{Math.round(interpolate(f,[0,70],[7,10],C))}</div><div style={{fontSize:11,color:MUTED}}>stops made</div><div style={{fontSize:12,marginTop:5}}>0 missed</div></div><div style={{margin:'22px 15px 0',padding:12,borderRadius:13,background:'#19191e'}}><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:MUTED}}><span>Bus Rider</span><span>5 to Tram</span></div><div style={{height:4,background:'#333',marginTop:10}}><div style={{height:4,width:'54%',background:WHITE}}/></div></div><div style={{display:'flex',gap:6,margin:'12px 15px'}}>{[['6','Day streak'],['6','Best'],['3','Places']].map(([n,l])=><div key={l} style={{flex:1,background:'#19191e',borderRadius:10,padding:'14px 2px',textAlign:'center'}}><div style={{fontSize:19,fontWeight:800}}>{n}</div><div style={{fontSize:9,color:MUTED,marginTop:5}}>{l}</div></div>)}</div><div style={{fontSize:11,fontWeight:700,margin:'18px 15px 8px'}}>Where we’ve woken you</div><div style={{height:width*.38,margin:'0 15px',borderRadius:12,background:'linear-gradient(130deg,#42664f,#587f69 40%,#2c5360 41%,#6a8d70)',position:'relative'}}><svg width="100%" height="100%" viewBox="0 0 260 100"><path d="M30 0L80 100M150 0L120 100M240 0L210 100M0 45L260 65" stroke="#c2d0b7" strokeWidth="2"/>{[50,105,180].map((x,i)=><circle key={x} cx={x} cy={25+i*25} r="4" fill={WHITE} stroke="#17171a" strokeWidth="2"/>)}</svg></div></>}
+</div></div>;
 };
 
-const SceneTitle: React.FC<{frame:number; kicker:string; line1:string; line2?:string; start?:number}> = ({frame,kicker,line1,line2,start=0}) => (
-  <div style={{opacity:fade(frame,start,start+16),transform:`translateY(${slide(frame,start,start+22,38)}px)`,fontFamily:'Inter,Arial,sans-serif',textAlign:'center',width:'100%'}}>
-    <div style={{fontSize:19,fontWeight:750,letterSpacing:5,color:RED,marginBottom:25}}>{kicker}</div>
-    <div style={{fontSize:70,fontWeight:820,letterSpacing:-3,lineHeight:1.02,color:WHITE}}>{line1}{line2 && <><br/><span style={{color:RED}}>{line2}</span></>}</div>
-  </div>
-);
+const Badge=()=> <div style={{display:'inline-flex',alignItems:'center',gap:10,padding:'11px 19px',background:'#f6f5f1',color:'#08080a',borderRadius:12,border:'1px solid #aaa',boxShadow:'0 12px 40px #0008'}}><svg width="26" height="29" viewBox="0 0 24 27"><path fill="#08080a" d="M17.9 14.2c0-2.8 2.3-4.2 2.4-4.3-1.3-1.9-3.3-2.1-4-2.1-1.7-.2-3.3 1-4.1 1s-2.1-1-3.5-1C6.9 7.8 5 9 4 10.9c-2 3.4-.5 8.4 1.4 11.2 1 1.4 2 2.9 3.4 2.8 1.3-.1 1.8-.9 3.4-.9s2 .9 3.4.9c1.4 0 2.3-1.4 3.2-2.8 1.1-1.6 1.5-3.2 1.5-3.3-.1 0-2.4-.9-2.4-3.6ZM15.2 6c.7-.9 1.2-2.1 1.1-3.3-1.1.1-2.4.8-3.1 1.7-.7.8-1.3 2-1.1 3.2 1.2.1 2.4-.6 3.1-1.6Z"/></svg><div><div style={{fontSize:9}}>Download on the</div><div style={{fontSize:22,fontWeight:700,lineHeight:1.1}}>App Store</div></div></div>;
 
-export const StopzonePromo: React.FC<Props> = ({format}) => {
-  const frame = useCurrentFrame();
-  const {width,height} = useVideoConfig();
-  const landscape = format === 'landscape';
-  const scale = landscape ? 0.76 : 1;
-  const bgZoom = interpolate(frame,[0,810],[1,1.12],clamp);
-  const alarm = fade(frame, 465, 485) * (1-fade(frame, 575, 605));
-  const cta = fade(frame, 645, 670);
-  const routeScene = frame >= 70 && frame < 260;
-  const phoneScene = frame >= 220 && frame < 470;
-  const quietScene = frame >= 350 && frame < 490;
-  const endScene = frame >= 640;
-  const showAudio = true;
-
-  return (
-    <AbsoluteFill style={{background:BG,color:WHITE,overflow:'hidden',fontFamily:'Inter,Arial,sans-serif'}}>
-      <AbsoluteFill style={{transform:`scale(${bgZoom})`,background:'radial-gradient(ellipse at 50% 42%, #211015 0%, #0b0c10 43%, #050608 100%)'}}/>
-      <Grid opacity={0.13}/>
-      <AbsoluteFill style={{background:`radial-gradient(ellipse at 50% 52%, #ff30350c, transparent 52%)`}}/>
-      {alarm > 0 && <AbsoluteFill style={{background:RED,opacity:alarm*0.19,mixBlendMode:'screen'}}/>}
-
-      {/* Scene 1: Hook */}
-      {frame < 105 && (
-        <AbsoluteFill style={{justifyContent:'center',alignItems:'center',padding:landscape?'8%':'9%',gap:34}}>
-          <div style={{position:'absolute',width:'130%',top:'8%',left:'-15%',opacity:fade(frame,0,18),transform:`translateY(${slide(frame,0,30,80)}px) rotate(-8deg)`}}>
-            <RouteGraphic frame={frame} width="100%" height={landscape?430:550}/>
-          </div>
-          <div style={{zIndex:2,marginTop:landscape?0:250}}>
-            <SceneTitle frame={frame} kicker="YOUR JOURNEY. YOUR STOP." line1="The city keeps" line2="moving."/>
-            <div style={{fontSize:27,color:'#d3d2d5',textAlign:'center',marginTop:26,opacity:fade(frame,28,44),transform:`translateY(${slide(frame,28,46,22)}px)`}}>You don't have to watch it.</div>
-          </div>
-          <div style={{position:'absolute',bottom:'8%',width:'100%',height:4,background:'#ffffff13',borderRadius:5,overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,frame/105*100)}%`,background:RED}}/></div>
-        </AbsoluteFill>
-      )}
-
-      {/* Scene 2: Set your stop */}
-      {frame >= 95 && frame < 280 && (
-        <AbsoluteFill style={{padding:landscape?'6% 9%':'8% 7%',justifyContent:'space-between',alignItems:'center'}}>
-          <SceneTitle frame={frame-95} kicker="ONE SIMPLE SETUP" line1="Set your stop." line2="Choose your zone."/>
-          <div style={{display:'flex',flexDirection:landscape?'row':'column',alignItems:'center',justifyContent:'center',gap:landscape?65:15,flex:1,width:'100%',marginTop:20}}>
-            <div style={{width:landscape?460:520,opacity:fade(frame,110,130),transform:`translateX(${slide(frame,100,140,-80)}px)`}}>
-              <RouteGraphic frame={frame-90} width="100%" height={landscape?320:430}/>
-            </div>
-            <div style={{transform:`translateY(${slide(frame,115,150,90)}px) scale(${interpolate(frame,[115,160],[.9,1],clamp)})`}}>
-              <Phone frame={frame-110}/>
-            </div>
-          </div>
-        </AbsoluteFill>
-      )}
-
-      {/* Scene 3: Let go */}
-      {frame >= 260 && frame < 465 && (
-        <AbsoluteFill style={{padding:landscape?'6% 10%':'8% 7%',justifyContent:'space-around',alignItems:'center'}}>
-          <SceneTitle frame={frame-260} kicker="NOW, JUST RIDE" line1="Put your phone" line2="away."/>
-          <div style={{display:'flex',flexDirection:landscape?'row':'column',alignItems:'center',justifyContent:'center',gap:landscape?70:8,flex:1,width:'100%'}}>
-            <div style={{width:landscape?430:530,opacity:fade(frame,270,295),transform:`translateY(${slide(frame,270,300,45)}px)`}}>
-              <RouteGraphic frame={frame-230} width="100%" height={landscape?330:420}/>
-            </div>
-            <div style={{transform:`translateY(${slide(frame,270,300,45)}px) rotate(${interpolate(frame,[270,400],[4,-3],clamp)}deg)`}}><Phone frame={frame-265} left/></div>
-          </div>
-          <div style={{fontSize:24,color:MUTED,opacity:fade(frame,345,365),textAlign:'center'}}>Stopzone tracks your distance while you ride.</div>
-        </AbsoluteFill>
-      )}
-
-      {/* Scene 4: Wake zone climax */}
-      {frame >= 455 && frame < 650 && (
-        <AbsoluteFill style={{justifyContent:'center',alignItems:'center',padding:landscape?'8% 12%':'9% 7%'}}>
-          <div style={{position:'absolute',width:landscape?760:880,height:landscape?760:880,borderRadius:'50%',border:`2px solid ${RED}`,opacity:fade(frame,465,490)*(1-fade(frame,575,600)),transform:`scale(${interpolate(frame,[460,520,610],[0.2,1.2,1.8],clamp)})`,boxShadow:`0 0 70px ${RED}55,inset 0 0 70px ${RED}22`}}/>
-          <div style={{position:'absolute',width:landscape?570:690,height:landscape?570:690,borderRadius:'50%',border:`1px solid #ff777b`,opacity:fade(frame,475,495)*(1-fade(frame,570,600)),transform:`scale(${interpolate(frame,[470,535,610],[0.3,1.1,1.6],clamp)})`}}/>
-          <div style={{zIndex:2,textAlign:'center',transform:`scale(${interpolate(frame,[460,480,510],[.8,1.04,1],clamp)})`}}>
-            <div style={{fontSize:19,letterSpacing:6,color:RED,fontWeight:800,opacity:fade(frame,465,480)}}>WAKE ZONE REACHED</div>
-            <div style={{fontSize:landscape?100:112,fontWeight:900,letterSpacing:-5,lineHeight:.95,marginTop:30,opacity:fade(frame,475,493)}}>THIS IS<br/><span style={{color:RED}}>YOUR STOP.</span></div>
-            <div style={{marginTop:35,fontSize:25,color:'#d0cdd1',opacity:fade(frame,505,530)}}>When it's time, you'll know.</div>
-          </div>
-          <div style={{position:'absolute',bottom:'10%',fontSize:15,letterSpacing:4,color:'#ffffff80',opacity:fade(frame,520,540)}}>STOPZONE</div>
-        </AbsoluteFill>
-      )}
-
-      {/* Scene 5: CTA */}
-      {endScene && (
-        <AbsoluteFill style={{justifyContent:'center',alignItems:'center',padding:landscape?'7% 12%':'9% 8%',opacity:cta,transform:`translateY(${slide(frame,640,680,50)}px)`}}>
-          <div style={{position:'absolute',top:'12%',width:landscape?540:620,opacity:.65,transform:`rotate(-8deg) translateY(${Math.sin(frame/18)*12}px)`}}><RouteGraphic frame={frame-450} width="100%" height={landscape?260:330} compact/></div>
-          <div style={{zIndex:2,textAlign:'center',marginTop:landscape?0:120}}>
-            <div style={{width:108,height:108,borderRadius:28,background:'linear-gradient(145deg,#ff666b,#e51f31 60%,#7b101b)',display:'grid',placeItems:'center',margin:'0 auto 28px',boxShadow:'0 0 65px #ff3b4245',fontSize:52,fontWeight:900}}>S<span style={{fontSize:45}}>.</span></div>
-            <div style={{fontSize:landscape?34:38,letterSpacing:8,fontWeight:800}}>STOPZONE</div>
-            <div style={{fontSize:landscape?64:72,fontWeight:850,letterSpacing:-3,lineHeight:1.05,marginTop:28}}>Get off where<br/>you meant to.</div>
-            <div style={{marginTop:38,display:'inline-flex',alignItems:'center',gap:14,padding:'20px 30px',borderRadius:16,background:WHITE,color:'#101014',fontSize:22,fontWeight:800,boxShadow:'0 15px 45px #0008'}}>
-              <span style={{fontSize:32}}>↗</span><span>Download on the App Store</span>
-            </div>
-            <div style={{fontSize:17,color:MUTED,marginTop:25}}>Your stop. Handled.</div>
-          </div>
-        </AbsoluteFill>
-      )}
-
-      {/* Optional tracks; files are intentionally user-supplied. */}
-      {showAudio && <AudioTrack frame={frame}/>}
-    </AbsoluteFill>
-  );
-};
-
-const AudioTrack: React.FC<{frame:number}> = ({frame}) => {
-  // Keep the project runnable before licensed music/voiceover are supplied.
-  // Audio is added only when files exist at the documented paths.
-  return null;
+export const StopzonePromo:React.FC<Props>=({format})=>{
+const f=useCurrentFrame(),landscape=format==='landscape';
+const is=(a:number,b:number)=>f>=a&&f<b;
+const side=landscape?'row':'column';
+const width=landscape?330:320;
+const music=interpolate(f,[0,25,780,810],[0,.24,.24,0],C);
+return <AbsoluteFill style={{background:BG,color:WHITE,fontFamily:'Inter,Arial,sans-serif',overflow:'hidden'}}><Backdrop f={f}/>
+{is(0,78)&&<AbsoluteFill style={{padding:landscape?'8%':'8%',justifyContent:'space-between'}}><div style={{position:'absolute',top:landscape?'4%':'19%',left:landscape?'43%':'-8%',width:landscape?'62%':'115%',opacity:.72,transform:`rotate(-7deg) translateY(${Math.sin(f/12)*10}px)`}}><Route f={f*2}/></div><div style={{zIndex:2,marginTop:landscape?'7%':0}}><div style={{fontSize:15,fontWeight:800,letterSpacing:4,color:RED}}>STOPZONE / LOCATION ALARM</div><div style={{fontSize:landscape?83:74,fontWeight:850,letterSpacing:-3,lineHeight:1.01,marginTop:27,opacity:fade(f,0,17),transform:`translateY(${lift(f,0,22,35)}px)`}}>Never miss<br/>your stop again.</div><div style={{fontSize:landscape?23:24,color:MUTED,marginTop:22,opacity:fade(f,15,30)}}>A real alarm that wakes you when you’re nearly there.</div></div><div style={{alignSelf:'center',marginBottom:'5%',transform:`translateY(${Math.sin(f/8)*8}px) scale(${1+Math.sin(f/8)*.03})`}}><svg width="82" height="100" viewBox="0 0 100 125"><path d="M50 4C24 4 5 24 5 49c0 34 45 72 45 72s45-38 45-72C95 24 76 4 50 4Z" fill={RED}/><circle cx="50" cy="48" r="18" fill={BG}/><circle cx="50" cy="48" r="7" fill={WHITE}/></svg></div></AbsoluteFill>}
+{is(78,240)&&<AbsoluteFill style={{padding:landscape?'7%':'8%',display:'flex',flexDirection:side,alignItems:landscape?'center':'stretch',justifyContent:'space-between',gap:landscape?50:18}}><div style={{width:landscape?'46%':'100%'}}><Header f={f-78} index="02" title="Drop a pin. Set your zone." sub="Choose how early we wake you. From a mile out to a few hundred feet." landscape={landscape}/><div style={{display:'flex',gap:8,marginTop:24,opacity:fade(f,105,124)}}>{['Commute','Night out','Travel'].map((s,i)=><div key={s} style={{padding:'9px 15px',border:'1px solid #39383e',borderRadius:30,fontSize:13,background:i===0?'#29272c':'#111114'}}>{s}</div>)}</div></div><div style={{width:landscape?'45%':'100%',display:'flex',justifyContent:'center',transform:`translateY(${lift(f,80,110,30)}px)`}}><Phone f={f-82} kind="setup" width={landscape?300:width}/></div></AbsoluteFill>}
+{is(240,420)&&<AbsoluteFill style={{padding:landscape?'7%':'8%',display:'flex',flexDirection:side,alignItems:landscape?'center':'stretch',justifyContent:'space-between',gap:landscape?50:8}}><div style={{width:landscape?'46%':'100%'}}><Header f={f-240} index="03" title="Then close your eyes." sub="Stopzone counts down the miles in the background while you rest." landscape={landscape}/><div style={{marginTop:27,fontSize:22,color:WHITE,opacity:fade(f,275,300)}}>Set it. Lock your phone. Relax.</div></div><div style={{width:landscape?'45%':'100%',display:'flex',justifyContent:'center',transform:`translateY(${lift(f,245,275,35)}px)`}}><Phone f={f-245} kind="ride" width={landscape?290:width}/></div></AbsoluteFill>}
+{is(420,535)&&<AbsoluteFill style={{padding:landscape?'7% 9%':'8%',display:'flex',flexDirection:side,alignItems:landscape?'center':'stretch',justifyContent:'space-between',gap:landscape?40:8}}><div style={{width:landscape?'48%':'100%'}}><Header f={f-420} index="04" title="It rings even on Silent." sub="Full screen. Full volume. Even when your phone is muted." landscape={landscape}/><div style={{marginTop:25,color:RED,fontSize:16,fontWeight:800,letterSpacing:2,opacity:fade(f,452,470)}}>YOUR STOP IS CLOSE.</div></div><div style={{width:landscape?'44%':'100%',display:'flex',justifyContent:'center',transform:`scale(${interpolate(f,[420,438,455],[.92,1.04,1],C)})`}}><Phone f={f-420} kind="alarm" width={landscape?290:width}/></div><AbsoluteFill style={{background:RED,opacity:interpolate(f,[420,432,440,450],[0,.22,0,.08],C),mixBlendMode:'screen',pointerEvents:'none'}}/></AbsoluteFill>}
+{is(535,675)&&<AbsoluteFill style={{padding:landscape?'7%':'8%',display:'flex',flexDirection:side,alignItems:landscape?'center':'stretch',justifyContent:'space-between',gap:landscape?40:12}}><div style={{width:landscape?'47%':'100%'}}><Header f={f-535} index="05" title="Every stop, counted." sub="See your streaks, your places, and the journeys you’ve completed." landscape={landscape}/><div style={{marginTop:24,color:MUTED,fontSize:17,opacity:fade(f,570,590)}}>Built for the ride. Ready when you are.</div></div><div style={{width:landscape?'43%':'100%',display:'flex',justifyContent:'center',transform:`translateY(${lift(f,540,570,25)}px)`}}><Phone f={f-540} kind="stats" width={landscape?285:width}/></div></AbsoluteFill>}
+{is(675,810)&&<AbsoluteFill style={{alignItems:'center',justifyContent:'center',padding:landscape?'7% 10%':'8%',textAlign:'center'}}><div style={{position:'absolute',top:'5%',width:landscape?'55%':'95%',opacity:.22,transform:`rotate(-8deg) translateY(${Math.sin(f/15)*9}px)`}}><Route f={f-520}/></div><div style={{zIndex:2,opacity:fade(f,675,700),transform:`translateY(${lift(f,675,700,25)}px)`}}><div style={{width:105,height:105,margin:'0 auto 23px',borderRadius:27,background:'#f7f5ed',display:'grid',placeItems:'center',boxShadow:'0 0 70px #ff403b25'}}><svg width="68" height="82" viewBox="0 0 100 125"><path d="M50 4C24 4 5 24 5 49c0 34 45 72 45 72s45-38 45-72C95 24 76 4 50 4Z" fill="#333"/><circle cx="50" cy="48" r="18" fill="#f7f5ed"/><circle cx="50" cy="48" r="7" fill={RED}/></svg></div><div style={{fontSize:16,fontWeight:800,letterSpacing:5}}>STOPZONE</div><div style={{fontSize:landscape?68:74,fontWeight:850,letterSpacing:-3,lineHeight:1.02,marginTop:23}}>Get off where<br/>you meant to.</div><div style={{marginTop:32,display:'inline-flex',alignItems:'center',gap:10,padding:'11px 19px',background:'#f6f5f1',color:'#08080a',borderRadius:12,border:'1px solid #aaa',boxShadow:'0 12px 40px #0008'}}><span style={{fontSize:28}}>●</span><div style={{textAlign:'left'}}><div style={{fontSize:9}}>Download on the</div><div style={{fontSize:22,fontWeight:700}}>App Store</div></div></div><div style={{fontSize:15,color:MUTED,marginTop:22}}>Download Stopzone today.</div></div></AbsoluteFill>}
+{f<810&&<Audio src={staticFile('audio/music.mp3')} volume={music}/>}
+</AbsoluteFill>;
 };
