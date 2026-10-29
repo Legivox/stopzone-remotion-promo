@@ -1,11 +1,13 @@
-# Product assets
+# Required product assets
 
-The current composition uses a custom vector UI stand-in. Before final approval, add the actual approved Stopzone screenshots and brand assets here, then replace the stand-in in `src/StopzonePromo.tsx`.
+The current composition references the following files. They must exist at these exact paths before rendering:
 
-Recommended:
-- A clean screenshot of the stop-selection screen
-- A clean screenshot of the wake-zone / destination screen
-- The official Stopzone app icon
-- The official App Store badge and listing URL
+- `01-home-phone.webp`
+- `02-zone-map-phone.webp`
+- `03-countdown-phone.webp`
+- `04-wakeup-phone.webp`
+- `05-stats-phone.webp`
+- `stopzone-icon.webp`
+- `app-store.svg`
 
-Do not use a fabricated App Store badge or imply unverified product features.
+The original product-screen crops and icon are part of the local review bundle but have not yet been committed as binary files to this repository. Do not assume the project is render-ready until they are present here.
